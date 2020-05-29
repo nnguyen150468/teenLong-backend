@@ -55,8 +55,11 @@ exports.react = catchAsync(async (req, res, next) => {
         word.reacted.push({user: req.user._id, reaction: req.body.reaction })
     } else {
         let meIndex = word.reacted.indexOf(me)
-    
-        word.reacted[meIndex].reaction =  req.body.reaction
+        if(me.reaction === req.body.reaction){
+            word.reacted[meIndex].reaction = "none"
+        } else{
+            word.reacted[meIndex].reaction =  req.body.reaction
+        }
     }
     
     await word.save()

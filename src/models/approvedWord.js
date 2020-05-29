@@ -42,8 +42,16 @@ const approvedWordSchema = new mongoose.Schema({
         }
     }],
     reactions: {
-        likes: Number,
-        dislikes: Number
+        likes: {
+            type: Number,
+            min: 0,
+            default: 0
+        },
+        dislikes: {
+            type: Number,
+            min: 0,
+            default: 0
+        }
     },
     scores: {
         type: Number

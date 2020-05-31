@@ -54,7 +54,8 @@ const approvedWordSchema = new mongoose.Schema({
         }
     },
     scores: {
-        type: Number
+        type: Number,
+        default: 0
     },
     me: {
         type: String,
@@ -75,6 +76,12 @@ approvedWordSchema.methods.checkApprovedDuplicate = async function(){
     })
     
     return this 
+}
+
+approvedWordSchema.methods.toJSON = function async(){
+    const wordObject = this.toObject()
+    delete wordObject.reacted
+    return wordObject
 }
 
 approvedWordSchema.pre(/^find/, function(){
@@ -101,13 +108,18 @@ approvedWordSchema.statics.calculateReactions = async function(wordID){
         }
     ])
     
+    //get object that include the count for likes and dislikes
     const likeStats = stats.find(el => el._id === "like")
     const dislikeStats = stats.find(el => el._id === "dislike")
+    console.log('likeStats', likeStats || 0)
+    console.log('dislikeStats', dislikeStats || 0)
+    // console.log('likeStats.count - dislikeStats.count', likeStats.count - dislikeStats.count)
     const word = await this.findByIdAndUpdate(wordID, {
         reactions: {
             likes: likeStats? likeStats.count: 0,
             dislikes: dislikeStats? dislikeStats.count : 0
-        }
+        },
+        scores: (likeStats && likeStats.count || 0) - (dislikeStats && dislikeStats.count || 0)
     },
     { new: true})
     

@@ -68,3 +68,30 @@ exports.react = catchAsync(async (req, res, next) => {
         data: word
     })
 })
+
+exports.search = catchAsync(async (req, res, next) => {
+    // const exact = ApprovedWord.find({"word": req.params.word}).sort('-scores')
+
+    const words =  ApprovedWord.find({"word": {$regex: new RegExp(`.*${req.params.word}*.`)}})
+    words.sort('-scores')
+
+    const countWords = await ApprovedWord.find({"word": {$regex: new RegExp(`.*${req.params.word}1.`)}}).countDocuments()
+
+    if(req.query.page || req.query.limit){
+        const page = req.query.page*1 || 1
+        const limit = req.query.limit*1 || 2
+        const skip = (page - 1)*limit
+        words.skip(skip).limit(limit)
+
+        if(req.query.page && skip > countWords){
+            return next(new AppError(400, "Page number out of range"))
+        }
+    }
+
+    const sortedResults = await words;
+
+    return res.status(200).json({
+        status: "success",
+        data: sortedResults
+    })
+})

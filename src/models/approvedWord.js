@@ -8,6 +8,11 @@ const approvedWordSchema = new mongoose.Schema({
         trim: true,
         required: [true, "Word is required"]
     },
+    noAccent: {
+        type: String,
+        trim: true,
+        lowercase: true
+    },
     definition: {
         type: String,
         trim: true,

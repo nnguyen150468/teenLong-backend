@@ -2,6 +2,8 @@ const ApprovedWord = require('../models/approvedWord')
 const Word = require('../models/word')
 const catchAsync = require('../middlewares/catchAsync')
 const AppError = require('../utils/appError')
+const removeAccents = require('remove-accents')
+const ridAccents = require('khong-dau')
 
 exports.createApprovedWord = catchAsync(async(req, res, next) => {
     const pendingWord = await Word.findOne({_id: req.params.wordID})
@@ -10,6 +12,7 @@ exports.createApprovedWord = catchAsync(async(req, res, next) => {
     const approvedWord = new ApprovedWord({
         categories: pendingWord.categories,
         word: pendingWord.word,
+        noAccent: ridAccents(removeAccents(pendingWord.word)), //pendingWord become no accent
         definition: pendingWord.definition,
         example: pendingWord.example,
         user: pendingWord.user,
@@ -70,13 +73,11 @@ exports.react = catchAsync(async (req, res, next) => {
 })
 
 exports.search = catchAsync(async (req, res, next) => {
-    // const exact = ApprovedWord.find({"word": req.params.word}).sort('-scores')
-
     const words =  ApprovedWord.find({"word": {$regex: new RegExp(`.*${req.params.word}*.`)}})
     words.sort('-scores')
 
-    const countWords = await ApprovedWord.find({"word": {$regex: new RegExp(`.*${req.params.word}1.`)}}).countDocuments()
-
+    const countWords = await ApprovedWord.find({"word": {$regex: new RegExp(`.*${req.params.word}*.`)}}).countDocuments()
+    
     if(req.query.page || req.query.limit){
         const page = req.query.page*1 || 1
         const limit = req.query.limit*1 || 2
@@ -90,6 +91,17 @@ exports.search = catchAsync(async (req, res, next) => {
 
     const sortedResults = await words;
 
+    return res.status(200).json({
+        status: "success",
+        data: sortedResults
+    })
+})
+
+exports.filterByFirstChar = catchAsync(async (req, res, next) => {
+    const firstChar = req.params.firstChar.toLowerCase()
+    const words = ApprovedWord.find({"noAccent": {$regex: new RegExp(`^${firstChar}.*`)}})
+    words.sort('word')
+    const sortedResults = await words
     return res.status(200).json({
         status: "success",
         data: sortedResults

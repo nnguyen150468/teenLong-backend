@@ -2,6 +2,8 @@ const Word = require('../models/word')
 const ApprovedWord = require('../models/approvedWord')
 const catchAsync = require('../middlewares/catchAsync')
 const AppError = require('../utils/appError')
+const removeAccents = require('remove-accents')
+const ridAccents = require('khong-dau')
 
 exports.createWord = catchAsync(async(req, res, next)=>{
     if(req.user.role==="user"){
@@ -21,6 +23,7 @@ exports.createWord = catchAsync(async(req, res, next)=>{
         console.log('as adminnn')
         const word = new ApprovedWord({
             ...req.body,
+            noAccent: ridAccents(removeAccents(req.body.word)),
             user: req.user._id
         })
         await word.save()

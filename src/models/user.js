@@ -31,6 +31,14 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         default: "user"
+    },
+    scores: {
+        type: Number,
+        default: 0
+    },
+    wordCount: {
+        type: Number,
+        default: 0
     }
 })
 
@@ -78,6 +86,14 @@ userSchema.statics.findOneOrCreate = async function({name, email}){
     found.token = await found.generateToken();
     
     return found
+}
+
+userSchema.statics.calculateUserScores = async function(userID){
+    const stats = await this.aggregate([
+        {
+            $match: {user: userID}
+        }
+    ])
 }
 
 const User = mongoose.model("User", userSchema)

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const User = require('./user')
 const catchAsync = require('../middlewares/catchAsync')
 const AppError = require('../utils/appError')
 
@@ -96,6 +97,7 @@ approvedWordSchema.pre(/^find/, function(){
 
 approvedWordSchema.post("save", async function(){
     await this.constructor.calculateReactions(this._id)
+    await this.constructor.calculateUserScores(this.user._id)
 })
 
 approvedWordSchema.statics.calculateReactions = async function(wordID){
@@ -116,8 +118,8 @@ approvedWordSchema.statics.calculateReactions = async function(wordID){
     //get object that include the count for likes and dislikes
     const likeStats = stats.find(el => el._id === "like")
     const dislikeStats = stats.find(el => el._id === "dislike")
-    console.log('likeStats', likeStats || 0)
-    console.log('dislikeStats', dislikeStats || 0)
+    // console.log('likeStats', likeStats || 0)
+    // console.log('dislikeStats', dislikeStats || 0)
     // console.log('likeStats.count - dislikeStats.count', likeStats.count - dislikeStats.count)
     const word = await this.findByIdAndUpdate(wordID, {
         reactions: {
@@ -128,9 +130,37 @@ approvedWordSchema.statics.calculateReactions = async function(wordID){
     },
     { new: true})
     
-    
-    console.log('likeStatesssss===', stats)
 }
+
+
+approvedWordSchema.statics.calculateUserScores = async function(userID){
+    const stats = await this.aggregate([
+        {
+            $match: {user: userID}
+        },
+        {
+            $group: {
+                _id: "$user",
+                userScores: {$sum: "$scores"},
+                wordCount: {$sum: 1}
+            }
+        }
+    ])
+
+    await User.findByIdAndUpdate(userID, {
+        scores: stats[0].userScores,
+        wordCount: stats[0].wordCount
+    },
+    { new: true })
+}
+
+// approvedWordSchema.statics.countUserWords = async function(userID){
+//     const stats = await this.aggregate([
+//         {
+//             $match: {user: userID}
+//         }
+//     ])
+// }
 
 const ApprovedWord = mongoose.model("ApprovedWord", approvedWordSchema)
 module.exports = ApprovedWord;

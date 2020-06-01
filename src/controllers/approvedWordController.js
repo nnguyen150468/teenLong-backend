@@ -1,5 +1,6 @@
 const ApprovedWord = require('../models/approvedWord')
 const Word = require('../models/word')
+const User = require('../models/user')
 const catchAsync = require('../middlewares/catchAsync')
 const AppError = require('../utils/appError')
 const removeAccents = require('remove-accents')
@@ -73,6 +74,10 @@ exports.react = catchAsync(async (req, res, next) => {
 })
 
 exports.search = catchAsync(async (req, res, next) => {
+    // const words = ApprovedWord.find({"word": req.body.word})
+    // words.sort('-scores')
+    
+
     const words =  ApprovedWord.find({"word": {$regex: new RegExp(`.*${req.params.word}*.`)}})
     words.sort('-scores')
 
@@ -89,7 +94,7 @@ exports.search = catchAsync(async (req, res, next) => {
         }
     }
 
-    const sortedResults = await words;
+    sortedResults = await words;
 
     return res.status(200).json({
         status: "success",

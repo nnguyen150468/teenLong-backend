@@ -74,14 +74,23 @@ exports.react = catchAsync(async (req, res, next) => {
 })
 
 exports.search = catchAsync(async (req, res, next) => {
-    // const words = ApprovedWord.find({"word": req.body.word})
-    // words.sort('-scores')
-    
+    const words =  ApprovedWord.find(
+        { $text: { 
+            $search: req.body.word
+            // $diacriticSensitive: true
+        }, },
+        { score: { $meta: 'textScore' }}
+        )
+        .sort({ score : { $meta : 'textScore' } })
+        .sort('-word -scores')
 
-    const words =  ApprovedWord.find({"word": {$regex: new RegExp(`.*${req.params.word}*.`)}})
-    words.sort('-scores')
+    const countWords = await ApprovedWord.find(
+        { $text: { $search: req.body.word } },
+        { score: { $meta: 'textScore' }}
+        )
+        .countDocuments()
 
-    const countWords = await ApprovedWord.find({"word": {$regex: new RegExp(`.*${req.params.word}*.`)}}).countDocuments()
+    //*ends try text index * /
     
     if(req.query.page || req.query.limit){
         const page = req.query.page*1 || 1
@@ -98,7 +107,9 @@ exports.search = catchAsync(async (req, res, next) => {
 
     return res.status(200).json({
         status: "success",
-        data: sortedResults
+        data: sortedResults,
+        // hihi: countWords
+
     })
 })
 
@@ -109,6 +120,6 @@ exports.filterByFirstChar = catchAsync(async (req, res, next) => {
     const sortedResults = await words
     return res.status(200).json({
         status: "success",
-        data: sortedResults
+        data: sortedResults,
     })
 })

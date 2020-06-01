@@ -7,7 +7,8 @@ const approvedWordSchema = new mongoose.Schema({
     word: {
         type: String,
         trim: true,
-        required: [true, "Word is required"]
+        required: [true, "Word is required"],
+        text: true
     },
     noAccent: {
         type: String,
@@ -70,6 +71,8 @@ const approvedWordSchema = new mongoose.Schema({
 }, {
     timestamps: true
 })
+
+approvedWordSchema.path('word').index({text : true});
 
 approvedWordSchema.methods.checkApprovedDuplicate = async function(){
     const ApprovedWord = require('./approvedWord')

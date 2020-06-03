@@ -76,14 +76,20 @@ exports.getOneUsersApprovedWords = catchAsync(async (req, res, next) => {
 })
 
 exports.getAllWordsByUser = catchAsync(async (req, res, next) => {
-    const words = await Word.find({ user: req.params.userID })
-    const approvedWord = await ApprovedWord.find({ user: req.params.userID })
-    const total = words.concat(approvedWord)
-
-    return res.status(200).json({
-        status: "success",
-        data: total
-    })
+    if(req.user.role==='admin' || req.user._id.toString() === req.params.userID){
+        const words = await Word.find({ user: req.params.userID })
+        const approvedWord = await ApprovedWord.find({ user: req.params.userID })
+        const total = words.concat(approvedWord)
+        
+        return res.status(200).json({
+            status: "success",
+            data: total,
+            totalResult: total.length
+        })
+    } else {
+        return next(new AppError(401, "Unauthorized"))
+    }
+    
 })
 
 exports.deleteUser = catchAsync(async (req, res, next) => {

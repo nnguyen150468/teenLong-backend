@@ -3,6 +3,7 @@ const {auth, checkPermission, checkAdmin} = require('../controllers/authControll
 const {createUser, getAllUsers, getOneUser, getOneUsersApprovedWords, 
     getMyProfile, deleteUser, updateUser, resetPassword, changePassword} = require('../controllers/userController')
 
+//delete get all my words
 
 router.route("/me")
 .get(auth, getMyProfile)
@@ -11,7 +12,7 @@ router.route("/")
 .post(createUser)
 .get(getAllUsers)
 
-router.route("/:userID/words/")
+router.route("/:userID/words")
 .get(getOneUsersApprovedWords)
 
 //check if it's correct user or admin deleting the account

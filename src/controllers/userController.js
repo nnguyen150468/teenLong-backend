@@ -37,18 +37,23 @@ exports.getOneUser = catchAsync(async (req, res, next) => {
 })
 
 exports.getMyProfile = catchAsync(async (req, res, next) => {
-    const pendingWords = await Word.find({user: req.user._id})
-    const approvedWords = await ApprovedWord.find({user: req.user_id})
+    console.log('req.user', req.user._id)
+    const pendingWords = await Word.find({user: req.user._id}).sort('-createdAt')
+    const approvedWords = await ApprovedWord.find({user: req.user_id}).sort('-createdAt')
+    const total = pendingWords.concat(approvedWords)
+    console.log('pending', pendingWords)
+    console.log('approved', approvedWords)
+    console.log('total===', total)
     return res.status(200).json({
         status: "success",
         user: req.user,
-        pendingWords: pendingWords,
-        approvedWord: approvedWords
+        data: total,
+        totalResult: total.length
     })
 })
 
 exports.getOneUsersApprovedWords = catchAsync(async (req, res, next) => {
-    const words =  ApprovedWord.find({ user: req.params.userID }).sort('-scores')
+    const words =  ApprovedWord.find({ user: req.params.userID }).sort('-createdAt')
     const countWords = await ApprovedWord.find({ user: req.params.userID }).countDocuments()
     
     

@@ -9,8 +9,8 @@ router.route("/")
 router.route("/allMyWords")
 .get(auth, getAllMyWords)
 
-router.route("/search/")
-.get(search)
+router.route("/search")
+.post(search)
 
 router.route("/filter/:firstChar")
 .get(filterByFirstChar)

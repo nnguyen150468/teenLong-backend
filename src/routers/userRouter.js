@@ -11,7 +11,7 @@ router.route("/")
 .post(createUser)
 .get(getAllUsers)
 
-router.route("/:userID/words")
+router.route("/:userID/words/")
 .get(getOneUsersApprovedWords)
 
 //check if it's correct user or admin deleting the account

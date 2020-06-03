@@ -121,9 +121,7 @@ approvedWordSchema.statics.calculateReactions = async function(wordID){
     //get object that include the count for likes and dislikes
     const likeStats = stats.find(el => el._id === "like")
     const dislikeStats = stats.find(el => el._id === "dislike")
-    // console.log('likeStats', likeStats || 0)
-    // console.log('dislikeStats', dislikeStats || 0)
-    // console.log('likeStats.count - dislikeStats.count', likeStats.count - dislikeStats.count)
+    
     const word = await this.findByIdAndUpdate(wordID, {
         reactions: {
             likes: likeStats? likeStats.count: 0,

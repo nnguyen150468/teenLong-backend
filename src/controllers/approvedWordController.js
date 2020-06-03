@@ -34,12 +34,37 @@ exports.createApprovedWord = catchAsync(async(req, res, next) => {
 
 exports.getAllApprovedWords = catchAsync(async(req, res, next) => {
     const filters = {...req.query}
+
+    const paginationKeys = ['page', 'limit', 'sort']
+    paginationKeys.map(el => delete filters[el])
+
+    const words = ApprovedWord.find(filters).sort("-createdAt")
     
-    const words = await ApprovedWord.find(filters)
-    if(!words) return next(new AppError(404, "Word not found"))
+    const countWords = await ApprovedWord.find(filters)
+        .countDocuments()
+
+    //*ends try text index * /
+    console.log('filers', filters)
+    console.log('req.query.page', req.query.page)
+    console.log('countWords', countWords)
+
+    if(req.query.page || req.query.limit){
+        const page = req.query.page*1 || 1
+        const limit = req.query.limit*1 || 10
+        const skip = (page - 1)*limit
+        words.skip(skip).limit(limit)
+
+        if(req.query.page && skip > countWords){
+            return next(new AppError(400, "Page number out of range"))
+        }
+    }
+
+    const sortedResults = await words;
+    
     return res.status(200).json({
         status: "success",
-        data: words
+        data: sortedResults,
+        totalResult: countWords
     })
 })
 
@@ -94,7 +119,7 @@ exports.search = catchAsync(async (req, res, next) => {
     
     if(req.query.page || req.query.limit){
         const page = req.query.page*1 || 1
-        const limit = req.query.limit*1 || 2
+        const limit = req.query.limit*1 || 10
         const skip = (page - 1)*limit
         words.skip(skip).limit(limit)
 
@@ -103,23 +128,44 @@ exports.search = catchAsync(async (req, res, next) => {
         }
     }
 
-    sortedResults = await words;
+    const sortedResults = await words;
 
     return res.status(200).json({
         status: "success",
         data: sortedResults,
-        // hihi: countWords
-
+        totalResult: countWords
     })
 })
 
 exports.filterByFirstChar = catchAsync(async (req, res, next) => {
     const firstChar = req.params.firstChar.toLowerCase()
-    const words = ApprovedWord.find({"noAccent": {$regex: new RegExp(`^${firstChar}.*`)}})
+    let words
+    let countWords
+
+    if(firstChar === "*"){
+        words = ApprovedWord.find({"noAccent": {$regex: new RegExp(/^[^A-Za-z]/)}})
+        countWords = await ApprovedWord.find({"noAccent": {$regex: new RegExp(/^[^A-Za-z]/)}}).countDocuments()
+    } else {
+        words = ApprovedWord.find({"noAccent": {$regex: new RegExp(`^${firstChar}.*`)}})
+        countWords = await ApprovedWord.find({"noAccent": {$regex: new RegExp(`^${firstChar}.*`)}}).countDocuments()
+    }
+
+    if(req.query.page || req.query.limit){
+        const page = req.query.page*1 || 1
+        const limit = req.query.limit*1 || 10
+        const skip = (page - 1)*limit
+        words.skip(skip).limit(limit)
+
+        if(req.query.page && skip > countWords){
+            return next(new AppError(400, "Page number out of range"))
+        }
+    }
+    
     words.sort('word')
     const sortedResults = await words
     return res.status(200).json({
         status: "success",
         data: sortedResults,
+        totalResult: countWords
     })
 })

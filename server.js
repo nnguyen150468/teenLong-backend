@@ -1,17 +1,10 @@
 require('dotenv').config()
-const https = require('https');
-const fs = require('fs')
+const http = require('http');
 const app = require('./app')
-const path = require('path')
 
 const mongoose = require('mongoose')
 
-const server = https.createServer({
-    key: fs.readFileSync(path.join(__dirname, "./server.key")),
-    cert: fs.readFileSync(path.join(__dirname, "./server.cert"))
-}, app);
-
-
+const server = http.createServer(app);
 
 mongoose.connect(process.env.DB, {
     useCreateIndex: true,

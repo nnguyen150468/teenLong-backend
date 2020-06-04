@@ -16,7 +16,7 @@ module.exports = new facebookStrategy(
             const data = profile._json
         
             const user = await User.findOneOrCreate({name: `${data.first_name} ${data.last_name}`, email: data.email})
-            
+            console.log("facebook passport", user, user.token)
             next(null, user)
         } catch(err){
             next(err, false)

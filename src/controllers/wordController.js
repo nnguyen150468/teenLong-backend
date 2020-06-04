@@ -52,12 +52,39 @@ exports.deletePendingWord = catchAsync(async(req, res, next) => {
 
 exports.getAllMyPendingWords = catchAsync(async(req, res, next) => {
     const allWords = await Word.find({user: req.user._id})
+    const countWords = await Word.find({user: req.user._id}).countDocuments()
     if(!allWords) return next(new AppError(404, "No word found"))
     return res.status(200).json({
         status: "success",
-        data: allWords
+        data: allWords,
+        totalResult: countWords
     })
 })
+
+exports.getAllMyApprovedWords = catchAsync(async(req, res, next) => {
+    const words =  ApprovedWord.find({user: req.user._id})
+    const countWords = await ApprovedWord.find({user: req.user._id}).countDocuments()
+
+    if(req.query.page || req.query.limit){
+        const page = req.query.page*1 || 1
+        const limit = req.query.limit*1 || 10
+        const skip = (page - 1)*limit
+        words.skip(skip).limit(limit)
+
+        if(req.query.page && skip > countWords){
+            return next(new AppError(400, "Page number out of range"))
+        }
+    }
+
+    const sortedResults = await words;
+
+    return res.status(200).json({
+        status: "success",
+        data: sortedResults,
+        totalResult: countWords
+    })
+})
+
 
 exports.getAllMyWords = catchAsync(async(req, res, next) => {
     const pendingWords = await Word.find({user: req.user._id})

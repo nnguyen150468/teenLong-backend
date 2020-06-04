@@ -7,7 +7,7 @@ module.exports = new facebookStrategy(
     {
         clientID: process.env.FB_ID,
         clientSecret: process.env.FB_SECRET,
-        callbackURL: process.env.FB_CB,
+        callbackURL: process.env.DOMAIN + process.env.FB_CB,
         profileFields: ["id", "email", "name"]
     },
     //verification function(callback)

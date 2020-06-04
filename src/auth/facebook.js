@@ -12,15 +12,16 @@ module.exports = new facebookStrategy(
     },
     //verification function(callback)
     async function(accessToken, refreshToken, profile, next){
-        try{
-            console.log('profile.json', profile._json)
+
+        // try{
+            console.log('profile.json', profile._json.email,'======= fb')
             const data = profile._json
         
             const user = await User.findOneOrCreate({name: `${data.first_name} ${data.last_name}`, email: data.email})
             console.log("facebook passport", user, user.token)
             next(null, user)
-        } catch(err){
-            next(err, false)
-        }
+        // } catch(err){
+            // next(err, false)
+        // }
     }
     )

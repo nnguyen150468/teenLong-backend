@@ -1,12 +1,15 @@
 const router = require('express').Router()
 const {auth, checkPermission, checkAdmin} = require('../controllers/authController')
 const {createUser, getAllUsers, getOneUser, getOneUsersApprovedWords, 
-    getMyProfile, deleteUser, updateUser, resetPassword, changePassword} = require('../controllers/userController')
+    getMyProfile, deleteUser, updateUser, resetPassword, changePassword, getMostPost} = require('../controllers/userController')
 
 //delete get all my words
 
 router.route("/me")
 .get(auth, getMyProfile)
+
+router.route("/mostPost")
+.get(getMostPost)
 
 router.route("/")
 .post(createUser)

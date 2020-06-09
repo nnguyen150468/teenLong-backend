@@ -172,3 +172,18 @@ exports.changePassword = catchAsync(async (req, res, next) => {
         data: user
     })
 })
+
+exports.getMostPost = catchAsync(async (req, res, next) => {
+    console.log('getMostPost')
+    const list = await User.aggregate([
+        {$match: {}},
+        {$sort: {wordCount: -1}},
+        {$limit: 3}
+    ])
+
+    console.log('list', list)
+    return res.status(200).json({
+        status: "success",
+        data: list
+    })
+})

@@ -43,12 +43,12 @@ router.route("/addNewWord")
 router.route("/create-categories")
 .get(catchAsync(async(req, res, next) => {
     const categories = await Category.insertMany([
-        {   category: "college" },
+        {   category: "showbiz" },
         {   category: "sex" },
-        {   category: "countries" },
+        {   category: "regions" },
         {   category: "family" },
-        {   category: "relationship" },
-        {   category: "society" }
+        {   category: "sports" },
+        {   category: "countries" }
     ])
     res.send(categories)
 }))

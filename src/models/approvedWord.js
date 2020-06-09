@@ -73,6 +73,7 @@ const approvedWordSchema = new mongoose.Schema({
 })
 
 approvedWordSchema.path('word').index({text : true});
+approvedWordSchema.path('scores').index({number : true});
 
 approvedWordSchema.methods.checkApprovedDuplicate = async function(){
     const ApprovedWord = require('./approvedWord')
@@ -101,6 +102,7 @@ approvedWordSchema.pre(/^find/, function(){
 approvedWordSchema.post("save", async function(){
     await this.constructor.calculateReactions(this._id)
     await this.constructor.calculateUserScores(this.user._id)
+    // await this.constructor.calculateHonors()
 })
 
 approvedWordSchema.statics.calculateReactions = async function(wordID){
@@ -155,13 +157,50 @@ approvedWordSchema.statics.calculateUserScores = async function(userID){
     { new: true })
 }
 
-// approvedWordSchema.statics.countUserWords = async function(userID){
-//     const stats = await this.aggregate([
-//         {
-//             $match: {user: userID}
-//         }
-//     ])
-// }
+approvedWordSchema.statics.calculateHonors = async function(next){
+    const previousHighScorer = await User.findOne({honors: {$in: ["highScorer"]}})
+    const previousMostPost = await User.findOne({honors: {$in: ["mostPost"]}})
+    const highestScoreUsers = await User.aggregate([
+        {$match: {}},
+        {$sort: {scores: -1}},
+        {$limit: 1}
+    ])
+
+    const mostPosts = await User.aggregate([
+        {$match: {}},
+        {$sort: {wordCount: -1}},
+        {$limit: 1}
+    ])
+
+    let highestScoreUser = await User.findOne({_id: highestScoreUsers[0]._id})
+    let mostPost = await User.findOne({_id: mostPosts[0]._id})
+
+    if(previousHighScorer){
+        if(previousHighScorer._id.toString() !== highestScoreUser._id.toString()){
+            previousHighScorer.honors.filter(el => el.toString() !== "highScorer")
+            console.log('previousHighScorer', previousHighScorer)
+            highestScoreUser.honors.push('highScorer')
+            await previousHighScorer.save()
+        }
+    } else {
+        highestScoreUser.honors.push('highScorer')
+    }
+    
+    
+    if(previousMostPost){
+        if(previousMostPost._id.toString() !== mostPost._id.toString()){
+            previousMostPost.honors.filter(el => el.toString() !=="mostPost")
+            console.log('previousMostPost', previousMostPost)
+            mostPost.honors.push('mostPost')
+            await previousMostPost.save()
+        }
+    } else {
+        mostPost.honors.push('mostPost')
+    }
+    
+    await highestScoreUser.save()
+    await mostPost.save()
+}
 
 const ApprovedWord = mongoose.model("ApprovedWord", approvedWordSchema)
 module.exports = ApprovedWord;

@@ -39,7 +39,10 @@ const userSchema = new mongoose.Schema({
     wordCount: {
         type: Number,
         default: 0
-    }
+    },
+    honors: [{
+        type: String
+    }]
 })
 
 userSchema.pre("save", async function(next){

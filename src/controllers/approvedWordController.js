@@ -17,7 +17,8 @@ exports.createApprovedWord = catchAsync(async(req, res, next) => {
         definition: pendingWord.definition,
         example: pendingWord.example,
         user: pendingWord.user,
-        createdAt: pendingWord.createdAt
+        createdAt: pendingWord.createdAt,
+        image: pendingWord.image
     })
 
     //check duplicate definition from existing approved words
@@ -169,3 +170,4 @@ exports.filterByFirstChar = catchAsync(async (req, res, next) => {
         totalResult: countWords
     })
 })
+
